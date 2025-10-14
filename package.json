@@ -1,15 +1,24 @@
 {
-  "name": "@azure-devops/mcp",
-  "version": "2.2.0",
-  "description": "MCP server for interacting with Azure DevOps",
+  "name": "@fsabatini82/azure-devops-mcp",
+  "version": "2.3.2",
+  "description": "MCP server for interacting with Azure DevOps with PAT authentication support",
   "license": "MIT",
-  "author": "Microsoft Corporation",
-  "homepage": "https://github.com/microsoft/azure-devops-mcp",
-  "bugs": "https://github.com/microsoft/azure-devops-mcp/issues",
+  "author": "Fabio Sabatini <fabio.sabatini@avanade.com>",
+  "homepage": "https://github.com/fsabatini82/azure-devops-mcp",
+  "bugs": "https://github.com/fsabatini82/azure-devops-mcp/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/azure-devops-mcp.git"
+    "url": "https://github.com/fsabatini82/azure-devops-mcp.git"
   },
+  "keywords": [
+    "azure-devops",
+    "mcp",
+    "model-context-protocol",
+    "azure",
+    "devops",
+    "pat",
+    "authentication"
+  ],
   "type": "module",
   "bin": {
     "mcp-server-azuredevops": "dist/index.js"
