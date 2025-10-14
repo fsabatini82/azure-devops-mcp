@@ -1,5 +1,8 @@
 # ⭐ Azure DevOps MCP Server
 
+[![npm version](https://img.shields.io/npm/v/@azure-devops/mcp?style=flat-square&logo=npm&logoColor=white)](https://www.npmjs.com/package/@azure-devops/mcp)
+[![GitHub release](https://img.shields.io/github/v/release/microsoft/azure-devops-mcp?style=flat-square&logo=github&logoColor=white)](https://github.com/microsoft/azure-devops-mcp/releases)
+
 Easily install the Azure DevOps MCP Server for VS Code or VS Code Insiders:
 
 [![Install with NPX in VS Code](https://img.shields.io/badge/VS_Code-Install_AzureDevops_MCP_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=ado&config=%7B%20%22type%22%3A%20%22stdio%22%2C%20%22command%22%3A%20%22npx%22%2C%20%22args%22%3A%20%5B%22-y%22%2C%20%22%40azure-devops%2Fmcp%22%2C%20%22%24%7Binput%3Aado_org%7D%22%5D%7D&inputs=%5B%7B%22id%22%3A%20%22ado_org%22%2C%20%22type%22%3A%20%22promptString%22%2C%20%22description%22%3A%20%22Azure%20DevOps%20organization%20name%20%20%28e.g.%20%27contoso%27%29%22%7D%5D)
@@ -162,6 +165,54 @@ For the best experience, use Visual Studio Code and GitHub Copilot. See the [get
 
 After installation, select GitHub Copilot Agent Mode and refresh the tools list. Learn more about Agent Mode in the [VS Code Documentation](https://code.visualstudio.com/docs/copilot/chat/chat-agent-mode).
 
+### Authentication Options
+
+The server supports multiple authentication modes. By default it uses an interactive Microsoft login (OAuth). You can explicitly pick a mode via the `--authentication` (or `-a`) argument when launching the server (e.g. through your `mcp.json` args array, before any domain flags).
+
+Supported values:
+
+| Mode              | Description                                                            | When to use                                                                                        |
+| ----------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `oauth` (default) | Interactive browser login using MSAL.                                  | You want a one‑time sign in and token caching.                                                     |
+| `azcli`           | Uses Azure CLI / DefaultAzureCredential chain.                         | You are already signed in with `az login` and prefer CLI token reuse or need multi‑tenant support. |
+| `env`             | Uses environment credentials (DefaultAzureCredential).                 | Running in CI or you have managed identity / service principal environment variables set.          |
+| `pat`             | Uses an Azure DevOps Personal Access Token (PAT) provided via env var. | Non-interactive automation or minimal permission scopes.                                           |
+
+#### Using a Personal Access Token (PAT)
+
+> 📋 **Note**: PAT authentication support was added in version 2.3.0
+
+1. Create a PAT in Azure DevOps (User Settings → Personal Access Tokens). Give it only the scopes you need (for most read scenarios: Code (Read), Work Items (Read), etc.).
+2. Set one of the supported environment variables before starting the server (first match wins):
+   - `AZDO_PAT` (preferred)
+   - `ADO_PAT`
+   - `AZURE_DEVOPS_EXT_PAT`
+3. Launch the server with `--authentication pat`.
+
+Example `mcp.json` snippet using PAT:
+
+```jsonc
+{
+  "inputs": [{ "id": "ado_org", "type": "promptString", "description": "Azure DevOps organization name (e.g. 'contoso')" }],
+  "servers": {
+    "ado_pat": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@azure-devops/mcp", "${input:ado_org}", "--authentication", "pat"],
+    },
+  },
+}
+```
+
+Security notes:
+
+- Treat the PAT like a password; never commit it.
+- Prefer the narrowest scopes possible.
+- Rotate long‑lived PATs on a schedule.
+- For interactive local use prefer `oauth` or `azcli` to avoid storing PATs.
+
+If the PAT is missing when `pat` mode is requested, the server will fail fast with a clear error message indicating which environment variables are checked. The PAT is automatically trimmed of whitespace, and empty values after trimming are rejected.
+
 #### 🧨 Install from Public Feed (Recommended)
 
 This installation method is the easiest for all users of Visual Studio Code.
@@ -284,6 +335,7 @@ See our [Contributions Guide](./CONTRIBUTING.md) for:
 - ✨ Adding new tools
 - 📝 Code style & testing
 - 🔄 Pull request process
+- 🧭 Key engineering decisions (auth patterns, test strategy, jest warnings mitigation)
 
 ## 🤝 Code of Conduct
 

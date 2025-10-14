@@ -1,4 +1,3 @@
-import { AccessToken } from "@azure/identity";
 import { describe, expect, it } from "@jest/globals";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebApi } from "azure-devops-node-api";
@@ -427,7 +426,7 @@ describe("configureWikiTools", () => {
         recursionLevel: "OneLevel" as const,
       };
 
-      const result = await handler(params);
+      await handler(params);
 
       const callUrl = mockFetch.mock.calls[0][0];
       expect(callUrl).toContain("recursionLevel=OneLevel");

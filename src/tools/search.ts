@@ -3,6 +3,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebApi } from "azure-devops-node-api";
+import { buildAuthorizationHeader } from "../auth-headers.js";
 import { IGitApi } from "azure-devops-node-api/GitApi.js";
 import { z } from "zod";
 import { apiVersion } from "../utils.js";
@@ -31,7 +32,7 @@ function configureSearchTools(server: McpServer, tokenProvider: () => Promise<st
       top: z.number().default(5).describe("Maximum number of results to return"),
     },
     async ({ searchText, project, repository, path, branch, includeFacets, skip, top }) => {
-      const accessToken = await tokenProvider();
+      const accessToken = buildAuthorizationHeader(await tokenProvider());
       const connection = await connectionProvider();
       const url = `https://almsearch.dev.azure.com/${orgName}/_apis/search/codesearchresults?api-version=${apiVersion}`;
 
@@ -56,7 +57,7 @@ function configureSearchTools(server: McpServer, tokenProvider: () => Promise<st
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
+          "Authorization": accessToken,
           "User-Agent": userAgentProvider(),
         },
         body: JSON.stringify(requestBody),
@@ -90,7 +91,7 @@ function configureSearchTools(server: McpServer, tokenProvider: () => Promise<st
       top: z.number().default(10).describe("Maximum number of results to return"),
     },
     async ({ searchText, project, wiki, includeFacets, skip, top }) => {
-      const accessToken = await tokenProvider();
+      const accessToken = buildAuthorizationHeader(await tokenProvider());
       const url = `https://almsearch.dev.azure.com/${orgName}/_apis/search/wikisearchresults?api-version=${apiVersion}`;
 
       const requestBody: Record<string, unknown> = {
@@ -112,7 +113,7 @@ function configureSearchTools(server: McpServer, tokenProvider: () => Promise<st
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
+          "Authorization": accessToken,
           "User-Agent": userAgentProvider(),
         },
         body: JSON.stringify(requestBody),
@@ -144,7 +145,7 @@ function configureSearchTools(server: McpServer, tokenProvider: () => Promise<st
       top: z.number().default(10).describe("Number of results to return"),
     },
     async ({ searchText, project, areaPath, workItemType, state, assignedTo, includeFacets, skip, top }) => {
-      const accessToken = await tokenProvider();
+      const accessToken = buildAuthorizationHeader(await tokenProvider());
       const url = `https://almsearch.dev.azure.com/${orgName}/_apis/search/workitemsearchresults?api-version=${apiVersion}`;
 
       const requestBody: Record<string, unknown> = {
@@ -169,7 +170,7 @@ function configureSearchTools(server: McpServer, tokenProvider: () => Promise<st
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
+          "Authorization": accessToken,
           "User-Agent": userAgentProvider(),
         },
         body: JSON.stringify(requestBody),

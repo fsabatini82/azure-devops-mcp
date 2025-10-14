@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import * as fs from "fs/promises";
 import * as os from "os";
 import * as path from "path";
@@ -7,9 +10,7 @@ interface OrgTenantCacheEntry {
   refreshedOn: number;
 }
 
-interface OrgTenantCache {
-  [orgName: string]: OrgTenantCacheEntry;
-}
+type OrgTenantCache = Record<string, OrgTenantCacheEntry>;
 
 const CACHE_FILE = path.join(os.homedir(), ".ado_orgs.cache");
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
@@ -20,6 +21,7 @@ async function loadCache(): Promise<OrgTenantCache> {
     return JSON.parse(cacheData);
   } catch (error) {
     // Cache file doesn't exist or is invalid, return empty cache
+    console.error("Failed to load org tenants cache:", error);
     return {};
   }
 }

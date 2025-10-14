@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 import { WebApi } from "azure-devops-node-api";
+import { buildAuthorizationHeader } from "../auth-headers.js";
 import { apiVersion } from "../utils.js";
 import { IdentityBase } from "azure-devops-node-api/interfaces/IdentitiesInterfaces.js";
 
@@ -12,11 +13,11 @@ interface IdentitiesResponse {
 async function getCurrentUserDetails(tokenProvider: () => Promise<string>, connectionProvider: () => Promise<WebApi>, userAgentProvider: () => string) {
   const connection = await connectionProvider();
   const url = `${connection.serverUrl}/_apis/connectionData`;
-  const token = await tokenProvider();
+  const token = buildAuthorizationHeader(await tokenProvider());
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${token}`,
+      "Authorization": token,
       "Content-Type": "application/json",
       "User-Agent": userAgentProvider(),
     },
@@ -32,7 +33,7 @@ async function getCurrentUserDetails(tokenProvider: () => Promise<string>, conne
  * Searches for identities using Azure DevOps Identity API
  */
 async function searchIdentities(identity: string, tokenProvider: () => Promise<string>, connectionProvider: () => Promise<WebApi>, userAgentProvider: () => string): Promise<IdentitiesResponse> {
-  const token = await tokenProvider();
+  const token = buildAuthorizationHeader(await tokenProvider());
   const connection = await connectionProvider();
   const orgName = connection.serverUrl.split("/")[3];
   const baseUrl = `https://vssps.dev.azure.com/${orgName}/_apis/identities`;
@@ -45,7 +46,7 @@ async function searchIdentities(identity: string, tokenProvider: () => Promise<s
 
   const response = await fetch(`${baseUrl}?${params}`, {
     headers: {
-      "Authorization": `Bearer ${token}`,
+      "Authorization": token,
       "Content-Type": "application/json",
       "User-Agent": userAgentProvider(),
     },

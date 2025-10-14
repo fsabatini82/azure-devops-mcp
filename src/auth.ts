@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 import { AzureCliCredential, ChainedTokenCredential, DefaultAzureCredential, TokenCredential } from "@azure/identity";
 import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azure/msal-node";
 import open from "open";
@@ -30,6 +33,7 @@ class OAuthAuthenticator {
           account: this.accountId,
         });
       } catch (error) {
+        console.error("Silent authentication failed:", error);
         authResult = null;
       }
     }
@@ -53,7 +57,7 @@ class OAuthAuthenticator {
 function createAuthenticator(type: string, tenantId?: string): () => Promise<string> {
   switch (type) {
     case "azcli":
-    case "env":
+    case "env": {
       if (type !== "env") {
         process.env.AZURE_TOKEN_CREDENTIALS = "dev";
       }
@@ -70,12 +74,22 @@ function createAuthenticator(type: string, tenantId?: string): () => Promise<str
         }
         return result.token;
       };
-
-    default:
+    }
+    case "pat": {
+      const raw = process.env.AZDO_PAT || process.env.ADO_PAT || process.env.AZURE_DEVOPS_EXT_PAT || "";
+      const pat = raw.trim();
+      if (!pat) {
+        throw new Error("PAT authentication selected but no PAT found. Set AZDO_PAT (preferred) or ADO_PAT / AZURE_DEVOPS_EXT_PAT environment variable.");
+      }
+      if (process.env.DEBUG) {
+        console.debug(`DEBUG: PAT authentication configured (length: ${pat.length})`);
+      }
+      return async () => `pat:${pat}`; // sentinel value consumed by buildAuthorizationHeader
+    }
+    default: {
       const authenticator = new OAuthAuthenticator(tenantId);
-      return () => {
-        return authenticator.getToken();
-      };
+      return () => authenticator.getToken();
+    }
   }
 }
 export { createAuthenticator };

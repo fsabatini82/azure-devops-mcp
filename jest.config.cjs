@@ -45,5 +45,18 @@ module.exports = {
     "^(.+)/version\\.js$": "$1/version.ts",
     "^(.+)/utils\\.js$": "$1/utils.ts",
     "^(.+)/auth\\.js$": "$1/auth.ts",
+    "^(.+)/auth-headers\\.js$": "$1/auth-headers.ts",
+  },
+  setupFilesAfterEnv: ["<rootDir>/test/jest.silence-warnings.ts"],
+  // Reduce worker count to mitigate occasional EPERM kill issues in Windows + Node 22
+  maxWorkers: 2,
+  // Silence specific benign ts-jest diagnostic codes (example: 151001 - TS config warnings) without disabling all diagnostics
+  globals: {
+    "ts-jest": {
+      diagnostics: {
+        warnOnly: true,
+        ignoreCodes: [151001],
+      },
+    },
   },
 };

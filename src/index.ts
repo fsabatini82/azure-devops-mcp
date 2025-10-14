@@ -44,9 +44,9 @@ const argv = yargs(hideBin(process.argv))
   })
   .option("authentication", {
     alias: "a",
-    describe: "Type of authentication to use. Supported values are 'interactive', 'azcli' and 'env' (default: 'interactive')",
+    describe: "Type of authentication to use. Supported values are 'interactive', 'azcli', 'env', and 'pat' (default: 'interactive'). For 'pat' set AZDO_PAT or ADO_PAT environment variable.",
     type: "string",
-    choices: ["interactive", "azcli", "env"],
+    choices: ["interactive", "azcli", "env", "pat"],
     default: defaultAuthenticationType,
   })
   .option("tenant", {
@@ -65,8 +65,9 @@ export const enabledDomains = domainsManager.getEnabledDomains();
 
 function getAzureDevOpsClient(getAzureDevOpsToken: () => Promise<string>, userAgentComposer: UserAgentComposer): () => Promise<azdev.WebApi> {
   return async () => {
-    const accessToken = await getAzureDevOpsToken();
-    const authHandler = azdev.getBearerHandler(accessToken);
+    const rawToken = await getAzureDevOpsToken();
+    const isPat = rawToken.startsWith("pat:");
+    const authHandler = isPat ? azdev.getPersonalAccessTokenHandler(rawToken.slice(4)) : azdev.getBearerHandler(rawToken);
     const connection = new azdev.WebApi(orgUrl, authHandler, undefined, {
       productName: "AzureDevOps.MCP",
       productVersion: packageVersion,
@@ -91,7 +92,6 @@ async function main() {
 
   // removing prompts untill further notice
   // configurePrompts(server);
-
   configureAllTools(server, authenticator, getAzureDevOpsClient(authenticator, userAgentComposer), () => userAgentComposer.userAgent, enabledDomains);
 
   const transport = new StdioServerTransport();

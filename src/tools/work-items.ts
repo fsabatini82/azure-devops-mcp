@@ -7,6 +7,7 @@ import { WorkItemExpand, WorkItemRelation } from "azure-devops-node-api/interfac
 import { QueryExpand } from "azure-devops-node-api/interfaces/WorkItemTrackingInterfaces.js";
 import { z } from "zod";
 import { batchApiVersion, markdownCommentsApiVersion, getEnumKeys, safeEnumConvert, encodeFormattedValue } from "../utils.js";
+import { buildAuthorizationHeader } from "../auth-headers.js";
 
 const WORKITEM_TOOLS = {
   my_work_items: "wit_my_work_items",
@@ -231,7 +232,7 @@ function configureWorkItemTools(server: McpServer, tokenProvider: () => Promise<
       const connection = await connectionProvider();
 
       const orgUrl = connection.serverUrl;
-      const accessToken = await tokenProvider();
+      const accessToken = buildAuthorizationHeader(await tokenProvider());
 
       const body = {
         text: comment,
@@ -241,7 +242,7 @@ function configureWorkItemTools(server: McpServer, tokenProvider: () => Promise<
       const response = await fetch(`${orgUrl}/${project}/_apis/wit/workItems/${workItemId}/comments?format=${formatParameter}&api-version=${markdownCommentsApiVersion}`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
+          "Authorization": accessToken,
           "Content-Type": "application/json",
           "User-Agent": userAgentProvider(),
         },
@@ -281,7 +282,7 @@ function configureWorkItemTools(server: McpServer, tokenProvider: () => Promise<
       try {
         const connection = await connectionProvider();
         const orgUrl = connection.serverUrl;
-        const accessToken = await tokenProvider();
+        const accessToken = buildAuthorizationHeader(await tokenProvider());
 
         if (items.length > 50) {
           return {
@@ -367,7 +368,7 @@ function configureWorkItemTools(server: McpServer, tokenProvider: () => Promise<
         const response = await fetch(`${orgUrl}/_apis/wit/$batch?api-version=${batchApiVersion}`, {
           method: "PATCH",
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            "Authorization": accessToken,
             "Content-Type": "application/json",
             "User-Agent": userAgentProvider(),
           },
@@ -669,7 +670,7 @@ function configureWorkItemTools(server: McpServer, tokenProvider: () => Promise<
     async ({ updates }) => {
       const connection = await connectionProvider();
       const orgUrl = connection.serverUrl;
-      const accessToken = await tokenProvider();
+      const accessToken = buildAuthorizationHeader(await tokenProvider());
 
       // Extract unique IDs from the updates array
       const uniqueIds = Array.from(new Set(updates.map((update) => update.id)));
@@ -706,7 +707,7 @@ function configureWorkItemTools(server: McpServer, tokenProvider: () => Promise<
       const response = await fetch(`${orgUrl}/_apis/wit/$batch?api-version=${batchApiVersion}`, {
         method: "PATCH",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
+          "Authorization": accessToken,
           "Content-Type": "application/json",
           "User-Agent": userAgentProvider(),
         },
@@ -749,7 +750,7 @@ function configureWorkItemTools(server: McpServer, tokenProvider: () => Promise<
     async ({ project, updates }) => {
       const connection = await connectionProvider();
       const orgUrl = connection.serverUrl;
-      const accessToken = await tokenProvider();
+      const accessToken = buildAuthorizationHeader(await tokenProvider());
 
       // Extract unique IDs from the updates array
       const uniqueIds = Array.from(new Set(updates.map((update) => update.id)));
@@ -778,7 +779,7 @@ function configureWorkItemTools(server: McpServer, tokenProvider: () => Promise<
       const response = await fetch(`${orgUrl}/_apis/wit/$batch?api-version=${batchApiVersion}`, {
         method: "PATCH",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
+          "Authorization": accessToken,
           "Content-Type": "application/json",
           "User-Agent": userAgentProvider(),
         },
