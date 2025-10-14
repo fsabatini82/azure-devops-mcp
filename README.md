@@ -4,13 +4,14 @@
 
 Enhanced Azure DevOps MCP Server with **Personal Access Token (PAT) authentication** support.
 
-## ✨ New in v2.3.3
+## ✨ New in v2.3.4
 
 - 🔐 **PAT Authentication**: Secure token-based authentication
 - 🛡️ **Enhanced Security**: Comprehensive security guidelines
 - 🧪 **Robust Testing**: Complete test coverage
 - 📚 **Better Documentation**: Clear setup instructions
 - 🚀 **Independent Distribution**: Ready for npm publishing
+- ✅ **Package Alignment**: Fixed package-lock.json synchronization
 
 ## 🚀 Quick Install
 
@@ -194,7 +195,7 @@ Supported values:
 
 #### Using a Personal Access Token (PAT)
 
-> 📋 **Note**: PAT authentication support was added in version 2.3.3
+> 📋 **Note**: PAT authentication support was added in version 2.3.0
 
 1. Create a PAT in Azure DevOps (User Settings → Personal Access Tokens). Give it only the scopes you need (for most read scenarios: Code (Read), Work Items (Read), etc.).
 2. Set one of the supported environment variables before starting the server (first match wins):
@@ -313,7 +314,7 @@ For example, use `"-d", "core", "work", "work-items"` to load only Work Item rel
     "ado_with_filtered_domains": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@azure-devops/mcp", "${input:ado_org}", "-d", "core", "work", "work-items"]
+      "args": ["-y", "@fsabatini82/azure-devops-mcp", "${input:ado_org}", "-d", "core", "work", "work-items"]
     }
   }
 }
