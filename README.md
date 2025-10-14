@@ -4,12 +4,13 @@
 
 Enhanced Azure DevOps MCP Server with **Personal Access Token (PAT) authentication** support.
 
-## ✨ New in v2.3.2
+## ✨ New in v2.3.3
 
 - 🔐 **PAT Authentication**: Secure token-based authentication
 - 🛡️ **Enhanced Security**: Comprehensive security guidelines
 - 🧪 **Robust Testing**: Complete test coverage
 - 📚 **Better Documentation**: Clear setup instructions
+- 🚀 **Independent Distribution**: Ready for npm publishing
 
 ## 🚀 Quick Install
 
@@ -193,7 +194,7 @@ Supported values:
 
 #### Using a Personal Access Token (PAT)
 
-> 📋 **Note**: PAT authentication support was added in version 2.3.2
+> 📋 **Note**: PAT authentication support was added in version 2.3.3
 
 1. Create a PAT in Azure DevOps (User Settings → Personal Access Tokens). Give it only the scopes you need (for most read scenarios: Code (Read), Work Items (Read), etc.).
 2. Set one of the supported environment variables before starting the server (first match wins):
@@ -211,7 +212,7 @@ Example `mcp.json` snippet using PAT:
     "ado_pat": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@azure-devops/mcp", "${input:ado_org}", "--authentication", "pat"],
+      "args": ["-y", "@fsabatini82/azure-devops-mcp", "${input:ado_org}", "--authentication", "pat"],
     },
   },
 }
@@ -249,13 +250,13 @@ In your project, add a `.vscode\mcp.json` file with the following content:
     "ado": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@azure-devops/mcp", "${input:ado_org}"]
+      "args": ["-y", "@fsabatini82/azure-devops-mcp", "${input:ado_org}"]
     }
   }
 }
 ```
 
-🔥 To stay up to date with the latest features, you can use our nightly builds. Simply update your `mcp.json` configuration to use `@azure-devops/mcp@next`. Here is an updated example:
+🔥 To stay up to date with the latest features, you can use our nightly builds. Simply update your `mcp.json` configuration to use `@fsabatini82/azure-devops-mcp@next`. Here is an updated example:
 
 ```json
 {
@@ -270,7 +271,7 @@ In your project, add a `.vscode\mcp.json` file with the following content:
     "ado": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@azure-devops/mcp@next", "${input:ado_org}"]
+      "args": ["-y", "@fsabatini82/azure-devops-mcp@next", "${input:ado_org}"]
     }
   }
 }
