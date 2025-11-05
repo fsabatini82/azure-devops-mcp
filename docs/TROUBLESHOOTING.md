@@ -2,18 +2,45 @@
 
 ## Common MCP Issues
 
-1. **Clearing VS Code Cache**
-   If you encounter issues with stale configurations, reload the VS Code window:
+1. **VS Code Cache Issues (Recommended Solution)**
+
+   **🚀 Use `--no-cache` Parameter (v2.3.4+)**
+
+   The easiest way to resolve cache issues is to use the `--no-cache` parameter:
+
+   ```json
+   {
+     "servers": {
+       "ado_nocache": {
+         "type": "stdio",
+         "command": "npx",
+         "args": ["-y", "@fsabatini82/azure-devops-mcp", "${input:ado_org}", "--authentication", "pat", "--no-cache"]
+       }
+     }
+   }
+   ```
+
+   **When to use `--no-cache`:**
+   - ✅ After updating PAT tokens
+   - ✅ Authentication issues after environment changes
+   - ✅ Switching organizations
+   - ✅ Debugging token problems
+
+   **Manual Cache Clearing (Alternative)**
+
+   If you encounter issues with stale configurations, try these steps in order:
+
+   a. **Reload VS Code Window:**
    - Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS).
    - Select `Developer: Reload Window`.
 
-   If the issue persists, you can take a more aggressive approach by clearing the following folders:
+   b. **Clear VS Code Cache Folders** (if reload doesn't work):
    - `%APPDATA%\Code\Cache`
    - `%APPDATA%\Code\CachedData`
    - `%APPDATA%\Code\User\workspaceStorage`
    - `%APPDATA%\Code\logs`
 
-   Clear Node Modules Cache
+   c. **Clear Node Modules Cache:**
    - `npm cache clean --force`
 
 2. **Server Not Showing Up in Agent Mode**

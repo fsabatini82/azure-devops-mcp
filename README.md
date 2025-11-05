@@ -4,8 +4,17 @@
 
 Enhanced Azure DevOps MCP Server with **Personal Access Token (PAT) authentication** support.
 
-## ✨ New in v2.3.4
+## ✨ New in v2.3.5
 
+- 🔄 **Cache Control**: `--no-cache` parameter for fresh authentication
+- 🛡️ **Enhanced PAT Support**: Fresh token reading on environment changes
+- 🧪 **Comprehensive Testing**: Added no-cache functionality tests
+- 📚 **Improved Documentation**: Cache troubleshooting guides
+- 🚀 **VS Code Integration**: Better caching issue resolution
+
+## Previous Releases
+
+### v2.3.4
 - 🔐 **PAT Authentication**: Secure token-based authentication
 - 🛡️ **Enhanced Security**: Comprehensive security guidelines
 - 🧪 **Robust Testing**: Complete test coverage
@@ -228,6 +237,51 @@ Security notes:
 
 If the PAT is missing when `pat` mode is requested, the server will fail fast with a clear error message indicating which environment variables are checked. The PAT is automatically trimmed of whitespace, and empty values after trimming are rejected.
 
+#### 🔄 Cache Control
+
+> 📋 **Note**: Cache control support was added in version 2.3.4
+
+By default, VS Code may cache authentication tokens and other MCP server data between sessions. If you need to force fresh authentication (e.g., when changing PAT tokens or switching environments), you can use the `--no-cache` parameter.
+
+**When to use `--no-cache`:**
+- After updating your PAT token in environment variables
+- When switching between different Azure DevOps organizations
+- When experiencing authentication issues after environment changes
+- For debugging authentication problems
+
+**Usage examples:**
+
+With PAT authentication:
+```jsonc
+{
+  "servers": {
+    "AzureDevOps_withPAT": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@fsabatini82/azure-devops-mcp@latest", "${input:ado_org}", "--authentication", "pat", "--no-cache"]
+    }
+  }
+}
+```
+
+With OAuth authentication:
+```jsonc
+{
+  "servers": {
+    "AzureDevOps_OAuth": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@fsabatini82/azure-devops-mcp@latest", "${input:ado_org}", "--authentication", "oauth", "--no-cache"]
+    }
+  }
+}
+```
+
+**Performance considerations:**
+- Using `--no-cache` will slightly increase startup time as tokens need to be refreshed
+- For production use, only enable `--no-cache` when necessary
+- Consider using `--no-cache` temporarily and removing it once authentication is working correctly
+
 #### 🧨 Install from Public Feed (Recommended)
 
 This installation method is the easiest for all users of Visual Studio Code.
@@ -252,6 +306,12 @@ In your project, add a `.vscode\mcp.json` file with the following content:
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@fsabatini82/azure-devops-mcp@latest", "${input:ado_org}", "--authentication", "pat"]
+    },
+    "AzureDevOps_withPAT_NoCache": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@fsabatini82/azure-devops-mcp@latest", "${input:ado_org}", "--authentication", "pat", "--no-cache"],
+      "description": "Use this configuration if you experience caching issues with PAT tokens"
     }
   }
 }
@@ -267,7 +327,10 @@ $env:AZDO_PAT = "your-pat-token-here"
 - Save the `mcp.json` file
 - Press `Ctrl+Shift+P` in VS Code
 - Type "MCP: Restart Servers"
+- Choose either `AzureDevOps_withPAT` (default) or `AzureDevOps_withPAT_NoCache` (for cache issues)
 - Your enhanced Azure DevOps server will be available!
+
+**💡 Tip**: If you encounter authentication issues after changing your PAT token, try using the `AzureDevOps_withPAT_NoCache` configuration to force fresh authentication.
 
 ### 🔄 **Version Options**
 

@@ -54,6 +54,11 @@ const argv = yargs(hideBin(process.argv))
     describe: "Azure tenant ID (optional, applied when using 'interactive' and 'azcli' type of authentication)",
     type: "string",
   })
+  .option("no-cache", {
+    describe: "Disable authentication token caching and force fresh authentication. Useful when changing PAT tokens or switching environments.",
+    type: "boolean",
+    default: false,
+  })
   .help()
   .parseSync();
 
@@ -83,12 +88,17 @@ async function main() {
     version: packageVersion,
   });
 
+  // Log cache control for debugging
+  if (argv["no-cache"]) {
+    console.debug("Cache disabled: forcing fresh authentication");
+  }
+
   const userAgentComposer = new UserAgentComposer(packageVersion);
   server.server.oninitialized = () => {
     userAgentComposer.appendMcpClientInfo(server.server.getClientVersion());
   };
   const tenantId = (await getOrgTenant(orgName)) ?? argv.tenant;
-  const authenticator = createAuthenticator(argv.authentication, tenantId);
+  const authenticator = createAuthenticator(argv.authentication, tenantId, argv["no-cache"]);
 
   // removing prompts untill further notice
   // configurePrompts(server);

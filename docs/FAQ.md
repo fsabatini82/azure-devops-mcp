@@ -16,7 +16,43 @@ Currently, you need to fetch the list of projects so the LLM has context about t
 
 ## Are PAT's supported?
 
-Sorry, PAT's are currently not supported in this local MCP Sever.
+**✅ Yes!** Personal Access Token (PAT) authentication is fully supported starting from version 2.3.0.
+
+**Setup:**
+1. Create a PAT in Azure DevOps (User Settings → Personal Access Tokens)
+2. Set environment variable: `$env:AZDO_PAT = "your-pat-token"`
+3. Use `--authentication pat` in your server configuration
+
+**Example configuration:**
+```json
+{
+  "servers": {
+    "ado_pat": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@fsabatini82/azure-devops-mcp", "${input:ado_org}", "--authentication", "pat"]
+    }
+  }
+}
+```
+
+## What if I change my PAT token and VS Code uses the old one?
+
+Use the `--no-cache` parameter to force fresh authentication:
+
+```json
+{
+  "servers": {
+    "ado_pat_nocache": {
+      "type": "stdio", 
+      "command": "npx",
+      "args": ["-y", "@fsabatini82/azure-devops-mcp", "${input:ado_org}", "--authentication", "pat", "--no-cache"]
+    }
+  }
+}
+```
+
+This ensures VS Code doesn't use cached tokens when you update your environment variables.
 
 ## Is there a remote supported version of the MCP Server?
 

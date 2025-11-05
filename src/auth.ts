@@ -13,9 +13,11 @@ class OAuthAuthenticator {
 
   private accountId: AccountInfo | null;
   private publicClientApp: PublicClientApplication;
+  private noCache: boolean;
 
-  constructor(tenantId?: string) {
+  constructor(tenantId?: string, noCache = false) {
     this.accountId = null;
+    this.noCache = noCache;
     this.publicClientApp = new PublicClientApplication({
       auth: {
         clientId: OAuthAuthenticator.clientId,
@@ -26,7 +28,9 @@ class OAuthAuthenticator {
 
   public async getToken(): Promise<string> {
     let authResult: AuthenticationResult | null = null;
-    if (this.accountId) {
+
+    // If cache is disabled, skip silent token acquisition
+    if (!this.noCache && this.accountId) {
       try {
         authResult = await this.publicClientApp.acquireTokenSilent({
           scopes,
@@ -37,12 +41,24 @@ class OAuthAuthenticator {
         authResult = null;
       }
     }
+
     if (!authResult) {
+      // Clear any cached accounts if no-cache is enabled
+      if (this.noCache) {
+        const accounts = await this.publicClientApp.getAllAccounts();
+        for (const account of accounts) {
+          await this.publicClientApp.getTokenCache().removeAccount(account);
+        }
+        this.accountId = null;
+      }
+
       authResult = await this.publicClientApp.acquireTokenInteractive({
         scopes,
         openBrowser: async (url) => {
           open(url);
         },
+        // Force fresh login if no-cache is enabled
+        prompt: this.noCache ? "login" : undefined,
       });
       this.accountId = authResult.account;
     }
@@ -54,7 +70,7 @@ class OAuthAuthenticator {
   }
 }
 
-function createAuthenticator(type: string, tenantId?: string): () => Promise<string> {
+function createAuthenticator(type: string, tenantId?: string, noCache = false): () => Promise<string> {
   switch (type) {
     case "azcli":
     case "env": {
@@ -68,6 +84,11 @@ function createAuthenticator(type: string, tenantId?: string): () => Promise<str
         credential = new ChainedTokenCredential(azureCliCredential, credential);
       }
       return async () => {
+        // For azcli/env, we rely on the underlying credential providers to handle caching
+        // The noCache parameter has limited effect here as the Azure SDK manages its own cache
+        if (noCache && process.env.DEBUG) {
+          console.debug("DEBUG: no-cache requested for azcli/env auth (limited effect - Azure SDK manages cache)");
+        }
         const result = await credential.getToken(scopes);
         if (!result) {
           throw new Error("Failed to obtain Azure DevOps token. Ensure you have Azure CLI logged or use interactive type of authentication.");
@@ -76,18 +97,40 @@ function createAuthenticator(type: string, tenantId?: string): () => Promise<str
       };
     }
     case "pat": {
-      const raw = process.env.AZDO_PAT || process.env.ADO_PAT || process.env.AZURE_DEVOPS_EXT_PAT || "";
-      const pat = raw.trim();
-      if (!pat) {
-        throw new Error("PAT authentication selected but no PAT found. Set AZDO_PAT (preferred) or ADO_PAT / AZURE_DEVOPS_EXT_PAT environment variable.");
+      // When noCache is false, we read the PAT once and cache it
+      // When noCache is true, we read the PAT fresh every time
+      if (!noCache) {
+        // Standard behavior: read PAT once at startup and cache it
+        const raw = process.env.AZDO_PAT || process.env.ADO_PAT || process.env.AZURE_DEVOPS_EXT_PAT || "";
+        const pat = raw.trim();
+        if (!pat) {
+          throw new Error("PAT authentication selected but no PAT found. Set AZDO_PAT (preferred) or ADO_PAT / AZURE_DEVOPS_EXT_PAT environment variable.");
+        }
+        if (process.env.DEBUG) {
+          console.debug(`DEBUG: PAT authentication configured (length: ${pat.length}, cached: true)`);
+        }
+        return async () => `pat:${pat}`; // Return cached PAT
+      } else {
+        // No-cache behavior: read PAT fresh from environment variables on every call
+        if (process.env.DEBUG) {
+          console.debug("DEBUG: PAT authentication configured with no-cache (will re-read env vars on each call)");
+        }
+        return async () => {
+          const freshRaw = process.env.AZDO_PAT || process.env.ADO_PAT || process.env.AZURE_DEVOPS_EXT_PAT || "";
+          const freshPat = freshRaw.trim();
+          if (!freshPat) {
+            throw new Error("PAT authentication selected but no PAT found. Set AZDO_PAT (preferred) or ADO_PAT / AZURE_DEVOPS_EXT_PAT environment variable.");
+          }
+          if (process.env.DEBUG) {
+            console.debug(`DEBUG: Fresh PAT read from environment (length: ${freshPat.length})`);
+          }
+          return `pat:${freshPat}`;
+        };
       }
-      if (process.env.DEBUG) {
-        console.debug(`DEBUG: PAT authentication configured (length: ${pat.length})`);
-      }
-      return async () => `pat:${pat}`; // sentinel value consumed by buildAuthorizationHeader
     }
     default: {
-      const authenticator = new OAuthAuthenticator(tenantId);
+      // Interactive/OAuth authentication
+      const authenticator = new OAuthAuthenticator(tenantId, noCache);
       return () => authenticator.getToken();
     }
   }

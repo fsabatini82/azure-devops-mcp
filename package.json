@@ -1,7 +1,7 @@
 {
   "name": "@fsabatini82/azure-devops-mcp",
-  "version": "2.3.4",
-  "description": "MCP server for interacting with Azure DevOps with PAT authentication support",
+  "version": "2.3.5",
+  "description": "MCP server for interacting with Azure DevOps with PAT authentication and cache control support",
   "license": "MIT",
   "author": "Fabio Sabatini <fabio.sabatini@avanade.com>",
   "homepage": "https://github.com/fsabatini82/azure-devops-mcp",

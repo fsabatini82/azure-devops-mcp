@@ -44,6 +44,8 @@ After installation, select GitHub Copilot Agent Mode and refresh the tools list.
 > 🔐 Authentication: You can choose how the server authenticates with Azure DevOps (interactive OAuth, Azure CLI, environment credentials, or a Personal Access Token). See the full comparison table in the main `README.md` under "Authentication Options". For quick PAT usage: set `AZDO_PAT` environment variable and add `--authentication pat` (or `-a pat`) to your server args. The PAT is automatically trimmed of whitespace.
 >
 > 📋 **Note**: PAT authentication support was added in version 2.3.0
+>
+> 🔄 **Cache Issues?** If you experience authentication problems after changing tokens, add `--no-cache` to your server args to force fresh authentication.
 
 #### 🧨 Install from Public Feed (Recommended)
 
